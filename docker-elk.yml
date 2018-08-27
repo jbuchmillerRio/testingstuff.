@@ -1,0 +1,42 @@
+  web-proc:
+    build: nginx
+    image: rls-app:
+    container_name: app
+    tty: true
+
+    links:
+      - db
+      - mongo
+    volumes:
+      # project folder
+      - app:/var/www/html/dev
+
+      # Config settings
+      - nginx/app.conf:/etc/httpd/conf.d/app.conf
+      - nginx/settings.php:/etc/tls/config/settings.php
+      
+      
+  mongo:
+    build: ./docker-rls/mongo
+    image: rls-mongo
+    container_name: mongo
+    volumes:
+      - mongodata:/data/db
+    ports:
+      - "27017:27017"
+      
+   db:
+    image: centos/mariadb-100-centos7
+    container_name: db
+    tty: true
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql/my.cnf.template:/var/lib/mysql/my.cnf.template
+      - mysql/z_override.cnf:/etc/my.cnf.d/z_override.cnf
+      - mysql/dump:/etc/rls/dump
+
+    environment:
+      - MYSQL_DATABASE=client_template
+      - MYSQL_USER=tls
+      - MYSQL_PASSWORD=vagrant
